@@ -1,11 +1,15 @@
 package org.programmiersportgruppe.redis.commands
 
+import org.programmiersportgruppe.redis.Command.Name
+
 import scala.concurrent.Future
 
 import akka.util.ByteString
 
 import org.programmiersportgruppe.redis._
 import org.programmiersportgruppe.redis.CommandArgument.ImplicitConversions._
+
+import scala.util.Try
 
 
 trait BulkExpected {
@@ -37,6 +41,17 @@ sealed abstract class RecognisedCommand(override val arguments: CommandArgument*
   override val name = Command.Name(getClass.getSimpleName.replace('_', ' '))
 
   override def toString = "RecognisedCommand: " + asCliString
+}
+
+object RecognisedCommand {
+  def fromUntypedCommand(untyped: UntypedCommand): Option[RecognisedCommand] =
+    Try {
+      untyped match {
+        case UntypedCommand(Name("GET"), Seq(key))        => GET(key)
+        case UntypedCommand(Name("SET"), Seq(key, value)) => SET(key, value.asByteString)
+        case UntypedCommand(Name("DEL"), Seq(head, tail)) => DEL(head, tail)
+      }
+    }.toOption
 }
 
 

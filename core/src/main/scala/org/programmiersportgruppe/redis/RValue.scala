@@ -12,6 +12,19 @@ sealed trait RSimpleScalar extends RScalar {
   def asByteString: ByteString
 }
 
+object RValue {
+
+    import scala.language.implicitConversions
+
+    implicit def rValue2ByteString(rValue: RValue): ByteString = {
+        rValue match {
+            case e: RSimpleScalar => e.asByteString
+            //TODO: bad bad boy
+            case RBulkString(data) => data.get
+            case RArray(items) => ???
+        }
+    }
+}
 
 case class RError(value: String) extends RSimpleScalar {
   override def asByteString = ByteString(value)

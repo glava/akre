@@ -14,4 +14,19 @@ class UntypedCommandTest extends Test {
     }
   }
 
+  it should "be able to generate from RValue seq" in {
+    assertResult("GET") {
+      UntypedCommand
+          .fromRValue(Seq(RBulkString("GET"), RBulkString("key")))
+          .get.name.toString
+    }
+
+    assertResult(StringArgument("key")) {
+      UntypedCommand
+          .fromRValue(Seq(RBulkString("GET"), RBulkString("key")))
+          .get.arguments.head
+    }
+
+  }
+
 }

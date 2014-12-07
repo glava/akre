@@ -106,14 +106,14 @@ lazy val protocol = project
   )
 
 lazy val client = project
-  .dependsOn(protocol, commands, coreDependency)
+  .dependsOn(protocol, commands, coreDependency, fake)
   .settings(sharedSettings: _*)
   .settings(
     description := "A Scala Redis client with pipelining, connection pooling, and a Future-based interface, implemented using Akka."
   )
 
 lazy val fake = project
-  .dependsOn(commands, coreDependency)
+  .dependsOn(commands, coreDependency, protocol)
   .settings(sharedSettings: _*)
   .settings(
     description := "A Redis fake for the JVM, implemented using Akka."

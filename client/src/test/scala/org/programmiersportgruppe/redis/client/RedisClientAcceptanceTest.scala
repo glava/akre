@@ -1,6 +1,8 @@
 package org.programmiersportgruppe.redis.client
 
 import java.net.InetSocketAddress
+import org.programmiersportgruppe.redis.fake.RedisServerFake
+
 import scala.concurrent.{Await, TimeoutException}
 import scala.concurrent.duration._
 import scala.util.Failure
@@ -190,4 +192,18 @@ class RedisClientAcceptanceTest extends ActorSystemAcceptanceTest {
     }
   }
 
+  it should "be able to connect to redis fake server" in {
+    withActorSystem { actorSystem =>
+      val server = actorSystem.actorOf(RedisServerFake.props())
+      implicit val client = new RedisClient(actorSystem, new InetSocketAddress("127.0.0.1", 4321), 3.seconds, 3.seconds, 1)
+      client.waitUntilConnected(5.seconds)
+
+      val retrieved = for {
+        s <- SET(Key("A key"), ByteString("A value")).execute
+        g <- GET(Key("A key")).executeString
+      } yield g
+
+      assertResult(Some("A value")) { await(retrieved) }
+    }
+  }
 }
