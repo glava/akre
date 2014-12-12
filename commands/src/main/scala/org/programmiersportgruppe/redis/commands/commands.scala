@@ -37,8 +37,9 @@ trait BooleanIntegerExpected
 
 
 // TODO: Rename class
-sealed abstract class RecognisedCommand(override val arguments: CommandArgument*) extends Command {
+sealed abstract class RecognisedCommand(val typedArguments: CommandArgument*) extends Command {
   override val name = Command.Name(getClass.getSimpleName.replace('_', ' '))
+  override val arguments = typedArguments.map(_.asByteString)
 
   override def toString = "RecognisedCommand: " + asCliString
 }
@@ -47,9 +48,9 @@ object RecognisedCommand {
   def fromUntypedCommand(untyped: UntypedCommand): Option[RecognisedCommand] =
     Try {
       untyped match {
-        case UntypedCommand(Name("GET"), Seq(key))        => GET(key)
-        case UntypedCommand(Name("SET"), Seq(key, value)) => SET(key, value.asByteString)
-        case UntypedCommand(Name("DEL"), Seq(head, tail)) => DEL(head, tail)
+        case UntypedCommand(Name("GET"), Seq(key)) => GET(Key(key))
+        case UntypedCommand(Name("SET"), Seq(key, value)) => SET(Key(key), value.asByteString)
+        case UntypedCommand(Name("DEL"), head +: tail) => DEL(Key(head), tail.map(Key(_)): _*)
       }
     }.toOption
 }
