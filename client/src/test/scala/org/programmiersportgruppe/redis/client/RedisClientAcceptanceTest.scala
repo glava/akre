@@ -80,22 +80,24 @@ class RedisClientAcceptanceTest extends ActorSystemAcceptanceTest {
 
   it should "recover from the server going down abruptly" in {
     withActorSystem { actorSystem =>
-      implicit var client: RedisClient = null
 
-      withRedisServer { serverAddress =>
-        client = new RedisClient(actorSystem, serverAddress, 1.second, 3.seconds, 1)
+      val (serverAddress, originalClient) = withRedisServer { address =>
+        implicit val client = new RedisClient(actorSystem, address, 1.second, 3.seconds, 1)
         client.waitUntilConnected(1.second)
 
         assertResult(RSimpleString.OK) {
           await(SET(Key("A key"), ByteString(1)).execute)
         }
+
+        (address, client)
       }
+      implicit val client = originalClient
 
       intercept[RequestExecutionException] {
         await(SET(Key("A key"), ByteString(2)).execute)
       }
 
-      withRedisServer { serverAddress =>
+      withRedisServer(serverAddress) { _ =>
         client.waitUntilConnected(1.second)
 
         assertResult(RSimpleString.OK) {
@@ -118,7 +120,7 @@ class RedisClientAcceptanceTest extends ActorSystemAcceptanceTest {
       }
 
       withRedisServer { serverAddress =>
-        client.waitUntilConnected(200.milliseconds)
+        client.waitUntilConnected(1.second)
 
         assertResult(RSimpleString.OK) {
           await(SET(Key("A key"), ByteString(4)).execute)

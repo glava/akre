@@ -34,7 +34,6 @@ val sharedSettings = Seq[Def.Setting[_]](
   )),
   licenses := Seq("MIT Licence" -> new URL("http://opensource.org/licenses/MIT")),
   organization := "org.programmiersportgruppe.akre",
-  version := "0.12.0",
   conflictManager := ConflictManager.strict,
   dependencyOverrides += "org.scala-lang" % "scala-library" % scalaVersion.value,
   scalacOptions := Seq(
@@ -72,6 +71,7 @@ val sharedSettings = Seq[Def.Setting[_]](
       </developer>
     </developers>
   },
+  testOptions in Test += Tests.Argument("-oF"),
   publishTo := mavenRepository(isSnapshot.value)
 )
 
